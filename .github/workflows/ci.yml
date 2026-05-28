@@ -54,7 +54,7 @@ jobs:
         run: |
           RUN_ID=$(python -c "import mlflow; import os; mlflow.set_tracking_uri(os.environ['MLFLOW_TRACKING_URI']); runs = mlflow.search_runs(experiment_names=[os.environ['MLFLOW_EXPERIMENT_NAME']], order_by=['attribute.start_time DESC'], max_results=1); print(runs.iloc[0]['run_id']) if not runs.empty else None")
           echo "Building docker image for Run ID: $RUN_ID"
-          mlflow models build-docker -m "runs:/$RUN_ID/model" -n "bima101/heart-disease-model:latest" --enable-mlserver
+          mlflow models build-docker -m "runs:/$RUN_ID/model" -n "bima101/heart-disease-model:latest" --enable-mlserver --env-manager local
           if [ -n "${{ secrets.DOCKER_USERNAME }}" ]; then
             docker push bima101/heart-disease-model:latest
           else
