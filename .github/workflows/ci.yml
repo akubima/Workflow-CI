@@ -30,18 +30,7 @@ jobs:
 
       - name: Verify MLflow Tracking Target
         run: |
-          STATUS=$(python -c "
-import mlflow
-import os
-try:
-    mlflow.set_tracking_uri('https://dagshub.com/akubima/Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad.mlflow')
-    client = mlflow.tracking.MlflowClient()
-    run = client.create_run(experiment_id='0', tags={'test': 'connection'})
-    client.delete_run(run.info.run_id)
-    print('SUCCESS')
-except Exception as e:
-    print('FAILED')
-")
+          STATUS=$(python verify_connection.py)
           if [ "$STATUS" = "SUCCESS" ]; then
             echo "DagsHub connection verified successfully. Logging to DagsHub..."
             echo "MLFLOW_TRACKING_URI=https://dagshub.com/akubima/Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad.mlflow" >> $GITHUB_ENV
