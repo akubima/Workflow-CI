@@ -31,7 +31,7 @@ jobs:
         run: |
           # Set DagsHub MLflow tracking URI
           export MLFLOW_TRACKING_URI="https://dagshub.com/akubima/Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad.mlflow"
-          mlflow run MLProject --no-conda -P n_estimators=120 -P max_depth=6
+          mlflow run MLProject --env-manager local -P n_estimators=120 -P max_depth=6
 
       - name: Log in to Docker Hub
         uses: docker/login-action@v3
