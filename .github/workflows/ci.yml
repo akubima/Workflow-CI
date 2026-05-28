@@ -1,0 +1,59 @@
+name: CI Retraining Workflow
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  retrain-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install mlflow==2.19.0 pandas scikit-learn dagshub docker
+
+      - name: Run MLProject Retraining
+        env:
+          MLFLOW_TRACKING_USERNAME: ${{ secrets.DAGSHUB_USERNAME }}
+          MLFLOW_TRACKING_PASSWORD: ${{ secrets.DAGSHUB_TOKEN }}
+        run: |
+          # Set DagsHub MLflow tracking URI
+          export MLFLOW_TRACKING_URI="https://dagshub.com/akubima/Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad.mlflow"
+          mlflow run MLProject --no-conda -P n_estimators=120 -P max_depth=6
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Build and Push Docker Image
+        run: |
+          export MLFLOW_TRACKING_URI="https://dagshub.com/akubima/Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad.mlflow"
+          # Fetch the latest run ID from CI_Retraining experiment
+          RUN_ID=$(python -c "
+import mlflow
+mlflow.set_tracking_uri('$MLFLOW_TRACKING_URI')
+runs = mlflow.search_runs(experiment_names=['CI_Retraining'], order_by=['attribute.start_time DESC'], max_results=1)
+if not runs.empty:
+    print(runs.iloc[0]['run_id'])
+")
+          echo "Building docker image for Run ID: $RUN_ID"
+          
+          # Build Docker image using mlflow models build-docker
+          mlflow models build-docker -m "runs:/$RUN_ID/model" -n "bima101/heart-disease-model:latest" --enable-mlserver
+          
+          # Push to Docker Hub
+          docker push bima101/heart-disease-model:latest
