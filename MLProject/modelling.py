@@ -22,7 +22,8 @@ if __name__ == '__main__':
         dagshub.init(repo_owner='akubima', repo_name='Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad', mlflow=True)
     except Exception as e:
         print(f"Could not connect to DagsHub ({e}). Using local MLflow Tracking.")
-        mlflow.set_tracking_uri("http://127.0.0.1:5000")
+        if not os.environ.get("MLFLOW_TRACKING_URI"):
+            mlflow.set_tracking_uri("http://127.0.0.1:5000")
 
     # Check if managed by mlflow run
     if "MLFLOW_RUN_ID" not in os.environ:
