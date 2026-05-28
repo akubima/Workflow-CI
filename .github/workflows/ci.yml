@@ -43,13 +43,7 @@ jobs:
         run: |
           export MLFLOW_TRACKING_URI="https://dagshub.com/akubima/Eksperimen_SML_Bima-Mukhlisin-Bil-Sajjad.mlflow"
           # Fetch the latest run ID from CI_Retraining experiment
-          RUN_ID=$(python -c "
-import mlflow
-mlflow.set_tracking_uri('$MLFLOW_TRACKING_URI')
-runs = mlflow.search_runs(experiment_names=['CI_Retraining'], order_by=['attribute.start_time DESC'], max_results=1)
-if not runs.empty:
-    print(runs.iloc[0]['run_id'])
-")
+          RUN_ID=$(python -c "import mlflow; mlflow.set_tracking_uri('$MLFLOW_TRACKING_URI'); runs = mlflow.search_runs(experiment_names=['CI_Retraining'], order_by=['attribute.start_time DESC'], max_results=1); print(runs.iloc[0]['run_id']) if not runs.empty else None")
           echo "Building docker image for Run ID: $RUN_ID"
           
           # Build Docker image using mlflow models build-docker
