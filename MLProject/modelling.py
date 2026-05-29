@@ -68,3 +68,9 @@ if __name__ == '__main__':
         mlflow.sklearn.log_model(model, "model")
         run_id = mlflow.active_run().info.run_id
         print(f"CI Run finished. Run ID: {run_id}. Accuracy: {acc:.4f}")
+
+        # Save model artifact to local directory for Git LFS upload
+        import joblib
+        os.makedirs("artifacts", exist_ok=True)
+        joblib.dump(model, os.path.join("artifacts", "model.pkl"))
+        print("Successfully saved model.pkl to artifacts/ folder.")
